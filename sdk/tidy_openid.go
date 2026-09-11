@@ -1,10 +1,7 @@
 package sdk
 
 import (
-	"errors"
 	"net/url"
-	"path/filepath"
-	"strings"
 
 	"github.com/fishpioffical/golang-sdk/types"
 )
@@ -30,32 +27,11 @@ func (s *FishPiSDK) GetOpenIdUrl(realm string, returnTo string) string {
 
 // PostOpenIdVerify 验证用户信息
 func (s *FishPiSDK) PostOpenIdVerify(query map[string]string) (*string, error) {
-
-	query["openid.mode"] = "check_authentication"
-
-	resp, err := s.client.R().
-		SetBodyJsonMarshal(query).
-		Post("/openid/verify")
+	result, err := s.PostOpenIdVerifyWithTokens(query)
 	if err != nil {
 		return nil, err
 	}
-
-	valid := false
-	arr := strings.Split(resp.String(), "\n")
-	for _, line := range arr {
-		if strings.HasPrefix(line, "is_valid:") {
-			valid = strings.TrimPrefix(line, "is_valid:") == "true"
-			break
-		}
-	}
-	if !valid {
-		return nil, errors.New("用户信息验证失败")
-	}
-
-	identity := query["openid.identity"]
-	openid := filepath.Base(identity)
-
-	return &openid, nil
+	return &result.OpenID, nil
 }
 
 // GetUserInfoById 使用用户ID获取用户基础信息

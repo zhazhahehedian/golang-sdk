@@ -12,6 +12,7 @@ import (
 type FishPiSDK struct {
 	configProvider config.Provider
 	client         *req.Client
+	oauthClient    *req.Client
 	logDir         string
 	logger         *slog.Logger
 }
@@ -39,6 +40,8 @@ func NewSDK(configProvider config.Provider, options ...Option) *FishPiSDK {
 	sdk := &FishPiSDK{
 		configProvider: configProvider,
 		client:         reqClient,
+		// OAuth 凭据不经过 API Key 客户端的查询参数、Cookie 或请求转储日志。
+		oauthClient: req.NewClient().SetRedirectPolicy(req.NoRedirectPolicy()),
 	}
 
 	// 应用选项
